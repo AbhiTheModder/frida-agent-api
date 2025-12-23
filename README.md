@@ -22,13 +22,13 @@ To get started, clone the repository and execute the start script. The script ha
 Now you can either visit the frontend page to use as GUI or API to use in your project, scripts, CLI:
 1. **Sending a TS File**
    ```shell
-    curl -X POST "http://localhost:8000/compile-agent" \
+    curl -X POST "http://localhost:8000/compile" \
     -F "file=@/path/to/my/script.ts" \
     --output _agent.js
     ```
 2. **Sending a Text Snippet**
    ```shell
-    curl -X POST "http://localhost:8000/compile-agent" \
+    curl -X POST "http://localhost:8000/compile" \
     -F "snippet=console.log('Hello from Frida Agent');" \
     --output _agent.js
     ```

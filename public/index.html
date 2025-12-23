@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>frida-agent compiler</title>
+  <style>
+    body {
+      font-family: "DejaVu Sans Mono", "Courier New", monospace;
+      background: #fdfdfd;
+      color: #000;
+    }
+    .page {
+      max-width: 720px;
+      margin: 40px auto;
+      border: 1px solid #000;
+      padding: 16px;
+    }
+    h1 {
+      font-size: 20px;
+      margin: 0 0 10px 0;
+      border-bottom: 1px solid #000;
+      padding-bottom: 4px;
+    }
+    fieldset {
+      border: 1px solid #000;
+      margin-top: 16px;
+      padding: 8px 12px 12px 12px;
+    }
+    legend {
+      padding: 0 4px;
+      font-weight: bold;
+      font-size: 13px;
+    }
+    label {
+      display: block;
+      margin: 4px 0;
+      font-size: 13px;
+    }
+    textarea {
+      width: 100%;
+      height: 220px;
+      font-family: "DejaVu Sans Mono", monospace;
+      font-size: 12px;
+      border: 1px solid #000;
+      padding: 4px;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+    input[type="file"] {
+      font-size: 12px;
+    }
+    .hint {
+      font-size: 11px;
+      color: #444;
+      margin-top: 2px;
+    }
+    .footer {
+      margin-top: 18px;
+      font-size: 11px;
+      border-top: 1px solid #000;
+      padding-top: 4px;
+    }
+    .buttons {
+      margin-top: 12px;
+    }
+    input[type="submit"],
+    input[type="reset"] {
+      font-family: inherit;
+      font-size: 12px;
+      padding: 2px 10px;
+      border: 1px solid #000;
+      background: #e0e0e0;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>frida-agent compiler</h1>
+
+    <form action="/compile" method="post" enctype="multipart/form-data">
+      <fieldset>
+        <legend>Snippet (TypeScript / JavaScript)</legend>
+        <label for="snippet">
+          Paste source (will be written as <code>index.ts</code>):
+        </label>
+        <textarea name="snippet" id="snippet"></textarea>
+        <div class="hint">
+          Leave this empty if you prefer to upload a file or zip archive.
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Upload</legend>
+        <label for="file">
+          File or archive:
+        </label>
+        <input type="file" name="file" id="file" accept=".ts,.js,.zip">
+        <div class="hint">
+          Accepts single <code>.ts</code>/<code>.js</code> or <code>.zip</code> with <code>index.ts</code> inside.
+        </div>
+      </fieldset>
+
+      <div class="buttons">
+        <input type="submit" value="Compile">
+        <input type="reset" value="Clear">
+      </div>
+
+      <div class="hint">
+        Exactly one of snippet or file must be provided.
+      </div>
+
+      <div class="footer">
+        Made with ❤️ by <a href="https://github.com/AbhiTheModder">Abhi</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
+

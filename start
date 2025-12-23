@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if [ ! -f "bottle.py" ]; then
+  wget https://bottlepy.org/bottle.py -O bottle.py
+fi
+
+python main.py

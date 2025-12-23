@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 import shutil
 import subprocess
 import uuid
@@ -15,6 +16,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Bottle()
+
+FRIDA_BRIDGE_RE = re.compile(
+    r"""import(?:\s+[^"']+\s+from\s+)?["'](frida-[^"']+-bridge)["']""",
+    re.VERBOSE,
+)
 
 
 def run_command(command: list, cwd: str):
@@ -50,9 +56,26 @@ def cleanup_directory(path: str):
     except Exception as e:
         logger.error(f"Failed to cleanup directory {path}: {e}")
 
+
+def find_frida_bridges(source: str) -> set[str]:
+    return set(m.group(1) for m in FRIDA_BRIDGE_RE.finditer(source))
+
+
+def collect_bridge_deps(agent_dir: Path) -> set[str]:
+    deps: set[str] = set()
+    for path in agent_dir.rglob("*.ts"):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        deps |= find_frida_bridges(text)
+    for path in agent_dir.rglob("*.js"):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        deps |= find_frida_bridges(text)
+    return deps
+
+
 @app.get("/")
 def index():
     return static_file("index.html", root="./public", mimetype="text/html")
+
 
 @app.post("/compile")
 def compile_agent():
@@ -134,7 +157,16 @@ def compile_agent():
                     f.write(content)
 
         manager = "bun" if shutil.which("bun") else "npm"
-        run_command([manager, "install"], cwd=str(output_dir))
+        run_command([manager, "install", "--ignore-scripts"], cwd=str(output_dir))
+
+        bridge_deps = collect_bridge_deps(agent_dir)
+        logger.info(f"Detected frida bridge deps: {bridge_deps}")
+
+        if bridge_deps:
+            if manager == "bun":
+                run_command(["bun", "add", *bridge_deps], cwd=str(output_dir))
+            else:
+                run_command(["npm", "install", *bridge_deps], cwd=str(output_dir))
 
         run_command(
             ["frida-compile", "agent/index.ts", "-o", "_agent.js", "-c"],

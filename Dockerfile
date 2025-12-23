@@ -16,4 +16,4 @@ EXPOSE 8000
 
 ENV PORT=8000
 
-CMD ["bash", "cloud.sh"]
+CMD ["python", "main.py"]

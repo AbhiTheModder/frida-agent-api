@@ -22,6 +22,12 @@ FRIDA_BRIDGE_RE = re.compile(
     re.VERBOSE,
 )
 
+BRIDGE_MAPPINGS = {
+    "Java": ("frida-java-bridge", 'import Java from "frida-java-bridge";'),
+    "ObjC": ("frida-objc-bridge", 'import ObjC from "frida-objc-bridge";'),
+    "Swift": ("frida-swift-bridge", 'import Swift from "frida-swift-bridge";'),
+}
+
 
 def run_command(command: list, cwd: str):
     """
@@ -59,6 +65,28 @@ def cleanup_directory(path: str):
 
 def find_frida_bridges(source: str) -> set[str]:
     return set(m.group(1) for m in FRIDA_BRIDGE_RE.finditer(source))
+
+
+def inject_missing_bridges(source: str) -> str:
+    """
+    Scans the source for usage of Java, ObjC, or Swift.
+    If used but not imported, injects the import statement at the top.
+    """
+    existing_imports = find_frida_bridges(source)
+    injections = []
+
+    for keyword, (pkg_name, import_stmt) in BRIDGE_MAPPINGS.items():
+        if pkg_name not in existing_imports:
+            if re.search(rf"\b{keyword}\b", source):
+                logger.info(
+                    f"Detected usage of '{keyword}' without import. Injecting: {pkg_name}"
+                )
+                injections.append(import_stmt)
+
+    if injections:
+        return "\n".join(injections) + "\n" + source
+
+    return source
 
 
 def collect_bridge_deps(agent_dir: Path) -> set[str]:
@@ -131,6 +159,7 @@ def compile_agent():
             os.makedirs(agent_dir, exist_ok=True)
 
         if snippet:
+            snippet = inject_missing_bridges(snippet)
             with open(agent_dir / "index.ts", "w") as f:
                 f.write(snippet)
 
@@ -152,9 +181,25 @@ def compile_agent():
 
                 if not (agent_dir / "index.ts").exists():
                     raise HTTPError(400, "ZIP must contain an index.ts file.")
+                for ts_file in agent_dir.rglob("*.ts"):
+                    try:
+                        original_text = ts_file.read_text(
+                            encoding="utf-8", errors="ignore"
+                        )
+                        fixed_text = inject_missing_bridges(original_text)
+                        if fixed_text != original_text:
+                            ts_file.write_text(fixed_text, encoding="utf-8")
+                    except Exception as e:
+                        logger.warning(
+                            f"Failed to auto-inject imports for {ts_file}: {e}"
+                        )
+
             else:
-                with open(agent_dir / "index.ts", "wb") as f:
-                    f.write(content)
+                text_content = content.decode("utf-8", errors="ignore")
+                text_content = inject_missing_bridges(text_content)
+
+                with open(agent_dir / "index.ts", "w") as f:
+                    f.write(text_content)
 
         manager = "bun" if shutil.which("bun") else "npm"
         run_command([manager, "install", "--ignore-scripts"], cwd=str(output_dir))

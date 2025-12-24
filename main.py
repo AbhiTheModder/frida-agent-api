@@ -105,6 +105,11 @@ def index():
     return static_file("index.html", root="./public", mimetype="text/html")
 
 
+@app.get("/frida_ver")
+def frida_ver():
+    return run_command(["frida", "--version"], "./").stdout.strip()
+
+
 @app.post("/compile")
 def compile_agent():
     """

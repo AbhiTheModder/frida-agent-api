@@ -22,6 +22,14 @@
         border-bottom: 1px solid #000;
         padding-bottom: 4px;
       }
+      .frida-version {
+        font-size: 13px;
+        margin: 8px 0;
+        padding: 6px 10px;
+        background: #e8f5e8;
+        border: 1px solid #0a0;
+        border-radius: 3px;
+      }
       fieldset {
         border: 1px solid #000;
         margin-top: 16px;
@@ -131,6 +139,11 @@
   <body>
     <div class="page">
       <h1>frida-agent compiler</h1>
+      
+      <div id="fridaVersion" class="frida-version" style="display: none;">
+        Compiled for Frida <span id="versionText">loading...</span>
+        <span id="versionWarning" class="error" style="display: none;">(Use same version to run)</span>
+      </div>
 
       <form id="compileForm">
         <fieldset>
@@ -170,6 +183,28 @@
       const overlay = document.getElementById("progressOverlay");
       const submitBtn = form.querySelector('input[type="submit"]');
       const progressText = overlay.querySelector(".progress-text");
+      const versionDiv = document.getElementById("fridaVersion");
+      const versionText = document.getElementById("versionText");
+      const versionWarning = document.getElementById("versionWarning");
+
+      async function loadFridaVersion() {
+        try {
+          const response = await fetch("/frida_ver");
+          if (!response.ok) {
+            throw new Error("Failed to fetch version");
+          }
+          const version = await response.text();
+          versionText.textContent = version;
+          versionDiv.style.display = "block";
+          versionWarning.style.display = "inline";
+        } catch (err) {
+          versionText.textContent = "unknown";
+          versionDiv.style.display = "block";
+          versionWarning.style.display = "none";
+        }
+      }
+
+      loadFridaVersion();
 
       function setLoading(isLoading) {
         if (isLoading) {

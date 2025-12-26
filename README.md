@@ -36,6 +36,6 @@ Now you can either visit the frontend page to use as GUI or API to use in your p
 ## F.A.Q
 
 1. **Why?**
-Modern Frida versions require a tedious setup: initializing projects with `frida-create`, managing bridges (*[Starting with Frida 17.0.0, bridges are no longer bundled with Frida’s GumJS runtime](https://frida.re/docs/bridges/)*), and manual compilation. These steps are often impossible(at the time of writing this) in environments like **Termux**, where `frida-compile` frequently fails.
+Modern Frida versions require a tedious setup: initializing projects with `frida-create`, managing bridges (*[Starting with Frida 17.0.0, bridges are no longer bundled with Frida’s GumJS runtime](https://frida.re/docs/bridges/)*), and manual compilation. These steps are often challenging (at the time of writing this) in environments like **Termux**, where `frida-compile` frequently fails.
 
 **This project automates the entire workflow**. Simply provide your script, and the tool handles project creation, dependency management, and compilation for you.
